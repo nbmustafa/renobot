@@ -71,13 +71,13 @@ module.exports = {
    */
   onboardingConfig: {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": ["github>nbmustafa/renobot//renovate/renovate.json"],
+    "extends": ["github>nbmustafa/renobot//renovate/renovate.json5"],
   },
  
   /** Human-readable PR metadata shown on the onboarding PR. */
   onboardingPrTitle: "chore: configure Renovate Bot for Helm chart tracking",
   onboardingCommitMessage: "chore: add Renovate config for Helm chart auto-updates",
-  
+
   /**
    * Never create more than 10 open PRs per repository at one time.
    * Keeps the PR queue manageable and avoids GitHub rate-limit spikes.
