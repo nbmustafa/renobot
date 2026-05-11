@@ -74,8 +74,8 @@ jobs:
         uses: renovatebot/github-action@v43.0.0
         env:
           # Use absolute paths that Renovate's Docker container recognizes internally
-          RENOVATE_BASE_DIR: /github/workspace/renovate-base
-          RENOVATE_CACHE_DIR: /github/workspace/renovate-cache
+          #RENOVATE_BASE_DIR: /github/workspace/renovate-base
+          #RENOVATE_CACHE_DIR: /github/workspace/renovate-cache
           RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
           RENOVATE_DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
           LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
