@@ -62,7 +62,7 @@ module.exports = {
    * Wait 3 days before raising a PR for a brand-new release.
    * Filters out yanked / immediately-patched releases.
    */
-  minimumReleaseAge: 3,
+  minimumReleaseAge: "3 days",
 
 
   // ── Dry-run override ───────────────────────────────────────────────────────
