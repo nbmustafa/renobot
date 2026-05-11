@@ -100,6 +100,30 @@ dependencies:
     repository: "https://argoproj.github.io/argo-helm"
 
 
+---
+# ── Example: nbmustafa/external-dns / Chart.yaml ─────────────────────────────
+#
+# NOTE: The upstream chart is published by kubernetes-sigs under the package
+# name `external-dns`. The official registry is hosted at:
+#   https://kubernetes-sigs.github.io/external-dns/
+#
+# appVersion tracks the ExternalDNS application release (e.g. v0.15.x),
+# which is independent from the chart version (e.g. 1.x.x).
+
+apiVersion: v2
+name: external-dns
+description: A Helm chart wrapping the upstream ExternalDNS release
+type: application
+version: 0.1.0
+appVersion: "v0.15.1"
+
+dependencies:
+  # renovate: datasource=helm registryUrl=https://kubernetes-sigs.github.io/external-dns/ depName=external-dns
+  - name: external-dns
+    version: "1.15.1"        # ← Renovate will open a PR to bump this value
+    repository: "https://kubernetes-sigs.github.io/external-dns/"
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SYNCHRONISING appVersion in values.yaml
 # ══════════════════════════════════════════════════════════════════════════════

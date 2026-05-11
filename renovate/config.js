@@ -31,10 +31,11 @@ module.exports = {
    * Format: "<org-or-user>/<repo>"
    */
   repositories: [
-    "nbmustafa/fluent-bit",
-    "nbmustafa/grafana",
-    "nbmustafa/prometheus",
-    "nbmustafa/argocd",
+    "nbmustafa/external-dns",
+    // "nbmustafa/fluent-bit",
+    // "nbmustafa/grafana",
+    // "nbmustafa/prometheus",
+    // "nbmustafa/argocd",
   ],
 
   // ── Onboarding ─────────────────────────────────────────────────────────────

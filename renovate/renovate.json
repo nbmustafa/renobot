@@ -40,10 +40,11 @@
    * Additionally, packageRules below pin each chart to its official feed.
    */
   "registryAliases": {
-    "fluent"      : "https://fluent.github.io/helm-charts",
-    "grafana"     : "https://grafana.github.io/helm-charts",
-    "prometheus"  : "https://prometheus-community.github.io/helm-charts",
-    "argo"        : "https://argoproj.github.io/argo-helm"
+    "external-dns"   : "https://kubernetes-sigs.github.io/external-dns/"
+    // "fluent"      : "https://fluent.github.io/helm-charts",
+    // "grafana"     : "https://grafana.github.io/helm-charts",
+    // "prometheus"  : "https://prometheus-community.github.io/helm-charts",
+    // "argo"        : "https://argoproj.github.io/argo-helm"
   },
 
   // ─── PR metadata ─────────────────────────────────────────────────────────
@@ -76,45 +77,55 @@
    */
   "packageRules": [
 
-    // ── Fluent-bit ────────────────────────────────────────────────────────
+    // ── External-DNS ────────────────────────────────────────────────────────
     {
-      "description": "Track Fluent-bit Helm chart from the official registry",
-      "matchPackageNames": ["fluent-bit"],
+      "description": "Track External-DNS Helm chart from the official kubernetes-sigs registry",
+      "matchPackageNames": ["external-dns"],
       "matchManagers": ["helmv3"],
-      "registryUrls": ["https://fluent.github.io/helm-charts"],
-      "labels": ["dependencies", "fluent-bit"],
+      "registryUrls": ["https://kubernetes-sigs.github.io/external-dns/"],
+      "labels": ["dependencies", "external-dns"],
       "versioning": "semver"
     },
 
-    // ── Grafana ───────────────────────────────────────────────────────────
-    {
-      "description": "Track Grafana Helm chart from the official Grafana registry",
-      "matchPackageNames": ["grafana"],
-      "matchManagers": ["helmv3"],
-      "registryUrls": ["https://grafana.github.io/helm-charts"],
-      "labels": ["dependencies", "grafana"],
-      "versioning": "semver"
-    },
+    // // ── Fluent-bit ────────────────────────────────────────────────────────
+    // {
+    //   "description": "Track Fluent-bit Helm chart from the official registry",
+    //   "matchPackageNames": ["fluent-bit"],
+    //   "matchManagers": ["helmv3"],
+    //   "registryUrls": ["https://fluent.github.io/helm-charts"],
+    //   "labels": ["dependencies", "fluent-bit"],
+    //   "versioning": "semver"
+    // },
 
-    // ── Prometheus (kube-prometheus-stack) ────────────────────────────────
-    {
-      "description": "Track Prometheus / kube-prometheus-stack from the Prometheus Community registry",
-      "matchPackageNames": ["prometheus", "kube-prometheus-stack", "prometheus-stack"],
-      "matchManagers": ["helmv3"],
-      "registryUrls": ["https://prometheus-community.github.io/helm-charts"],
-      "labels": ["dependencies", "prometheus"],
-      "versioning": "semver"
-    },
+    // // ── Grafana ───────────────────────────────────────────────────────────
+    // {
+    //   "description": "Track Grafana Helm chart from the official Grafana registry",
+    //   "matchPackageNames": ["grafana"],
+    //   "matchManagers": ["helmv3"],
+    //   "registryUrls": ["https://grafana.github.io/helm-charts"],
+    //   "labels": ["dependencies", "grafana"],
+    //   "versioning": "semver"
+    // },
 
-    // ── ArgoCD ────────────────────────────────────────────────────────────
-    {
-      "description": "Track ArgoCD Helm chart from the official Argo registry",
-      "matchPackageNames": ["argo-cd", "argocd"],
-      "matchManagers": ["helmv3"],
-      "registryUrls": ["https://argoproj.github.io/argo-helm"],
-      "labels": ["dependencies", "argocd"],
-      "versioning": "semver"
-    },
+    // // ── Prometheus (kube-prometheus-stack) ────────────────────────────────
+    // {
+    //   "description": "Track Prometheus / kube-prometheus-stack from the Prometheus Community registry",
+    //   "matchPackageNames": ["prometheus", "kube-prometheus-stack", "prometheus-stack"],
+    //   "matchManagers": ["helmv3"],
+    //   "registryUrls": ["https://prometheus-community.github.io/helm-charts"],
+    //   "labels": ["dependencies", "prometheus"],
+    //   "versioning": "semver"
+    // },
+
+    // // ── ArgoCD ────────────────────────────────────────────────────────────
+    // {
+    //   "description": "Track ArgoCD Helm chart from the official Argo registry",
+    //   "matchPackageNames": ["argo-cd", "argocd"],
+    //   "matchManagers": ["helmv3"],
+    //   "registryUrls": ["https://argoproj.github.io/argo-helm"],
+    //   "labels": ["dependencies", "argocd"],
+    //   "versioning": "semver"
+    // },
 
     // ── Auto-merge patch releases ─────────────────────────────────────────
     {
