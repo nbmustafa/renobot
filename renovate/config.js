@@ -44,15 +44,40 @@ module.exports = {
    * Disable the first-run onboarding PR so Renovate starts working
    * immediately without waiting for a merge.
    */
-  onboarding: false,
+  onboarding: true,
 
   /**
    * Still require a renovate.json to be present in the repo root.
    * This acts as a safety gate: Renovate will not touch a repo unless
    * an explicit config exists, preventing accidental changes.
    */
-  requireConfig: "required",
+  requireConfig: "optional",
 
+    /**
+   * Seed the onboarding PR with our production helmv3 config instead of
+   * Renovate's generic boilerplate.
+   *
+   * "github>nbmustafa/renobot//renovate/renovate.json" is a
+   * Renovate config-preset URL pointing at renovate.json in THIS runner repo.
+   * When Renovate opens the onboarding PR in e.g. nbmustafa/grafana, it
+   * pre-populates the new renovate.json with a single "extends" line that
+   * pulls the full helmv3 ruleset from the central config.
+   *
+   * This means all five target repos share a single source of truth.
+   * To update rules for every repo at once, edit renovate/renovate.json
+   * in this runner repo only — no need to open PRs in each target repo.
+   *
+   * Replace "renovate-config" below with whatever you name THIS repository.
+   */
+  onboardingConfig: {
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": ["github>nbmustafa/renobot//renovate/renovate.json"],
+  },
+ 
+  /** Human-readable PR metadata shown on the onboarding PR. */
+  onboardingPrTitle: "chore: configure Renovate Bot for Helm chart tracking",
+  onboardingCommitMessage: "chore: add Renovate config for Helm chart auto-updates",
+  
   /**
    * Never create more than 10 open PRs per repository at one time.
    * Keeps the PR queue manageable and avoids GitHub rate-limit spikes.
