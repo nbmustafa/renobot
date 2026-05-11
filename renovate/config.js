@@ -18,7 +18,7 @@ module.exports = {
    */
   endpoint: "https://api.github.com/",
 
-
+  
   /**
    * Used by Renovate to author commits and PRs.
    * Must match the identity of the PAT owner, or a dedicated bot account.
