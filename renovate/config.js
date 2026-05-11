@@ -18,12 +18,6 @@ module.exports = {
    */
   endpoint: "https://api.github.com/",
 
-  // ── Authentication ─────────────────────────────────────────────────────────
-  /**
-   * RENOVATE_TOKEN is injected at runtime by the GitHub Actions workflow
-   * (see renovate.yml).  Never hard-code a token here.
-   */
-  token: process.env.RENOVATE_TOKEN,
 
   /**
    * Used by Renovate to author commits and PRs.
@@ -58,14 +52,6 @@ module.exports = {
    */
   requireConfig: "required",
 
-  // ── Runtime behaviour ──────────────────────────────────────────────────────
-  /**
-   * Print verbose logs when the LOG_LEVEL env-var is set to "debug".
-   * The workflow sets LOG_LEVEL=debug on workflow_dispatch so you can
-   * trigger a manual debug run without changing this file.
-   */
-  logLevel: process.env.LOG_LEVEL || "info",
-
   /**
    * Never create more than 10 open PRs per repository at one time.
    * Keeps the PR queue manageable and avoids GitHub rate-limit spikes.
@@ -76,16 +62,8 @@ module.exports = {
    * Wait 3 days before raising a PR for a brand-new release.
    * Filters out yanked / immediately-patched releases.
    */
-  stabilityDays: 3,
+  minimumReleaseAge: 3,
 
-  // ── Persistence (optional but recommended for large orgs) ──────────────────
-  /**
-   * Cache Renovate's internal state between runs so it does not
-   * re-process every repository from scratch on every schedule tick.
-   * The GitHub Actions workflow mounts this path via the "cache" action.
-   */
-  cacheDir: "/tmp/renovate/cache",
-  baseDir:  "/tmp/renovate/base",
 
   // ── Dry-run override ───────────────────────────────────────────────────────
   /**
