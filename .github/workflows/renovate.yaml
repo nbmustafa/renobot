@@ -37,8 +37,9 @@ on:
   push:
     branches: [main]
     paths:
-      - ".github/workflows/renovate.yml"
+      - ".github/workflows/renovate.yaml"
       - "renovate/config.js"
+      - "renovate/renovate.json5"
 
 concurrency:
   group: renovate

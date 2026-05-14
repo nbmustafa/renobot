@@ -44,14 +44,14 @@ module.exports = {
    * Disable the first-run onboarding PR so Renovate starts working
    * immediately without waiting for a merge.
    */
-  onboarding: true,
+  onboarding: false,
 
   /**
    * Still require a renovate.json to be present in the repo root.
    * This acts as a safety gate: Renovate will not touch a repo unless
    * an explicit config exists, preventing accidental changes.
    */
-  requireConfig: "optional",
+  requireConfig: "required",
 
     /**
    * Seed the onboarding PR with our production helmv3 config instead of
@@ -96,5 +96,5 @@ module.exports = {
    * Set RENOVATE_DRY_RUN=true in the workflow environment to validate
    * config changes without actually opening PRs.
    */
-  dryRun: process.env.RENOVATE_DRY_RUN === "true" ? "full" : null,
+  ...(process.env.RENOVATE_DRY_RUN === "true" ? { dryRun: "full" } : {}),
 };
