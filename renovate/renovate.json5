@@ -1,18 +1,60 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+  "description": "Shared Renovate preset for Helm wrapper/template repositories. Target repos should extend this file from their root renovate.json/renovate.json5.",
+
+  // ─── Base Presets ────────────────────────────────────────────────────────
+  /**
+   * Start from Renovate's standard defaults, then layer in:
+   * - dependency dashboard support
+   * - semantic commit messages
+   * - separate PRs for patch releases
+   */
   "extends": [
     "config:base",
     ":dependencyDashboard",
     ":semanticCommits",
     ":separatePatchReleases"
   ],
+
+  // ─── Active Managers ─────────────────────────────────────────────────────
+  /**
+   * helmv3:
+   *   Tracks versions declared in Chart.yaml dependencies.
+   *
+   * regex:
+   *   Lets us update additional fields in Chart.yaml, such as appVersion,
+   *   when those values are annotated with a renovate comment.
+   */
   "enabledManagers": ["helmv3", "regex"],
+
+  // ─── Helm Chart Discovery ────────────────────────────────────────────────
+  /**
+   * Scan every Chart.yaml in the repository. This fits single-chart repos
+   * and also catches charts nested in sub-directories.
+   */
   "helmv3": {
     "fileMatch": ["(^|/)Chart\\.yaml$"]
   },
+
+  // ─── Regex-Based Sync Rules ──────────────────────────────────────────────
+  /**
+   * This regex manager is intentionally annotation-driven.
+   *
+   * Example:
+   *   # renovate: datasource=helm registryUrl=https://kubernetes-sigs.github.io/external-dns/ depName=external-dns
+   *   appVersion: "1.15.1"
+   *
+   * or:
+   *   # renovate: datasource=helm registryUrl=https://kubernetes-sigs.github.io/external-dns/ depName=external-dns
+   *   version: "1.15.1"
+   *
+   * Renovate then treats the following version/appVersion value as belonging
+   * to the annotated upstream dependency.
+   */
   "regexManagers": [
     {
-      "description": "Track upstream Helm chart version and appVersion via annotation comment",
+      "description": "Track upstream Helm chart version or appVersion via renovate annotation comments",
       "fileMatch": ["(^|/)Chart\\.yaml$"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[^\\s]+) registryUrl=(?<registryUrl>[^\\s]+) depName=(?<depName>[^\\s]+)\\s+(?:version|appVersion):\\s*[\"']?(?<currentValue>[^\\s\"']+)[\"']?"
@@ -20,42 +62,79 @@
       "versioningTemplate": "semver"
     }
   ],
+
+  // ─── Registry Aliases ────────────────────────────────────────────────────
+  /**
+   * Optional short-name aliases for registries that appear repeatedly across
+   * Helm wrapper repos. Package-specific rules below can still pin the exact
+   * registry URL when needed.
+   */
   "registryAliases": {
     "external-dns": "https://kubernetes-sigs.github.io/external-dns/"
   },
+
+  // ─── PR Metadata ─────────────────────────────────────────────────────────
+  /**
+   * Applied to all update PRs unless a packageRule adds extra labels.
+   */
   "labels": ["dependencies"],
   "assignees": ["nbmustafa"],
+
+  /**
+   * Keep the PR body compact and focused on the dependency table plus
+   * Renovate's built-in notes/changelog sections.
+   */
   "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}{{{configDescription}}}{{{footer}}}",
+
+  // ─── Branch & Commit Naming ──────────────────────────────────────────────
   "branchPrefix": "renovate/",
   "commitMessagePrefix": "chore(deps):",
   "commitMessageAction": "update",
   "commitMessageTopic": "helm chart {{depName}}",
   "commitMessageExtra": "to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}v{{{newMajor}}}{{else}}{{{newVersion}}}{{/if}}{{/if}}",
+
+  // ─── Package Rules ───────────────────────────────────────────────────────
   "packageRules": [
     {
+      "description": "Track external-dns from the official kubernetes-sigs Helm registry",
       "matchPackageNames": ["external-dns"],
       "registryUrls": ["https://kubernetes-sigs.github.io/external-dns/"],
       "labels": ["dependencies", "external-dns"]
     },
     {
+      "description": "Auto-merge patch updates after checks pass",
       "matchUpdateTypes": ["patch"],
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true
     },
     {
+      "description": "Minor and major updates should open PRs but never auto-merge",
       "matchUpdateTypes": ["minor", "major"],
       "automerge": false
     },
     {
+      "description": "Delay major-version PRs for 7 days to avoid immediately superseded releases",
       "matchUpdateTypes": ["major"],
       "stabilityDays": 7
     }
   ],
+
+  // ─── Security Updates ────────────────────────────────────────────────────
+  /**
+   * Allow Renovate to raise dedicated vulnerability remediation PRs with
+   * clear security labeling when supported by the datasource/platform.
+   */
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": ["security", "dependencies"]
   },
+
+  // ─── Dependency Dashboard ────────────────────────────────────────────────
+  /**
+   * Keep the dashboard enabled for visibility, but do not require dashboard
+   * approval before opening normal update PRs.
+   */
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "🤖 Renovate Dependency Dashboard"
 }

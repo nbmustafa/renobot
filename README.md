@@ -6,16 +6,18 @@
 .                               ← A dedicated "renovate-config" repo
 ├── .github/
 │   └── workflows/
-│       └── renovate.yml        ← GitHub Actions workflow (runs the bot)
+│       └── renovate.yaml       ← GitHub Actions workflow (runs the bot)
 ├── renovate/
 │   ├── config.js               ← Self-hosted runner config (which repos to scan)
-│   └── renovate.json           ← Per-repo Renovate rules (copy into EACH target repo)
+│   ├── renovate.json5          ← Shared global Renovate preset for Helm repos
+│   └── repo-template.json5     ← Minimal root config stub for each target repo
 └── Chart.yaml.examples         ← Reference Chart.yaml snippets (do NOT commit as-is)
 ```
 
-> **Two-repo model** — `config.js` lives in this *runner* repo. `renovate.json` is
-> committed to the **root of each target repo** (`fluent-bit`, `grafana`,
-> `prometheus`, `argocd`).
+> **Two-repo model** — `config.js` lives in this *runner* repo. The shared
+> preset also lives here in `renovate/renovate.json5`. Each target repo keeps
+> only a tiny `renovate/renovate.json5` or `renovate/renovate.json` file that
+> extends this shared preset.
 
 ---
 
@@ -73,26 +75,180 @@ hard-coded.
 
 ---
 
-## 3. Copy renovate.json into each target repo
+## 3. Onboard a new Helm repository
+
+Use these steps any time you want Renovate to manage a new Helm wrapper or
+template repository.
+
+### Step 1. Add the repository to the runner allow-list
+
+Edit [renovate/config.js](https://github.com/nbmustafa/renobot/blob/main/renovate/config.js) and add the new repository to the
+`repositories` array.
+
+Example:
+
+```js
+repositories: [
+  "nbmustafa/external-dns",
+  "nbmustafa/new-service",
+],
+```
+
+This tells the self-hosted Renovate runner that it is allowed to scan and
+open PRs for that repository.
+
+### Step 2. Add a Renovate stub in the target repo
+
+Create a file named `renovate/renovate.json5` in the target repository.
+That file should be very small and should only extend the shared preset from
+this `renobot` repository.
+
+```json5
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>nbmustafa/renobot//renovate/renovate.json5"]
+}
+```
+
+You can also copy the template from `renovate/repo-template.json5`.
+
+Directory layout in the target repo:
+
+```text
+target-repo/
+├── Chart.yaml
+├── Chart.lock
+└── renovate/
+    └── renovate.json5
+```
+
+### Step 3. Make sure the target repo has a valid Chart.yaml
+
+Renovate's Helm manager reads dependency versions from `Chart.yaml`, so the
+target repo must declare its upstream chart dependency there.
+
+At minimum, make sure `Chart.yaml` contains:
+
+1. A `dependencies[]` entry with the correct upstream chart name.
+2. The correct upstream `repository` URL.
+3. A `# renovate: ...` annotation immediately above the dependency entry.
+
+Example:
+
+```yaml
+dependencies:
+  # renovate: datasource=helm registryUrl=https://kubernetes-sigs.github.io/external-dns/ depName=external-dns
+  - name: external-dns
+    version: "1.15.1"
+    repository: "https://kubernetes-sigs.github.io/external-dns/"
+```
+
+Follow [Chart.yaml.examples](https://github.com/nbmustafa/renobot/blob/main/Chart.yaml.examples) for full examples.
+
+### Step 4. Regenerate and commit Chart.lock
+
+Run:
+
+```bash
+helm dependency update
+```
+
+Then commit `Chart.yaml` and `Chart.lock` together in the target repository.
+This gives Renovate a clean starting point and ensures lockfile updates stay
+in sync with chart dependency bumps.
+
+### Step 5. Merge the target repo config first
+
+Open and merge the PR in the target repository that adds:
+
+1. `renovate/renovate.json5`
+2. `Chart.yaml` updates
+3. `Chart.lock` updates
+
+Renovate cannot manage the repository until that repo config file exists on
+the default branch.
+
+### Step 6. Merge the runner repo change
+
+If you changed `renovate/config.js` in `renobot` to add the repository name,
+merge that PR as well.
+
+Renovate needs both sides in place:
+
+1. The runner must be allowed to scan the repo.
+2. The target repo must extend the shared config.
+
+### Step 7. Trigger a validation run
+
+After both PRs are merged, run the Renovate workflow manually:
+
+```text
+GitHub → Actions → "🤖 Renovate Bot" → Run workflow
+  dry_run: true
+  log_level: debug
+```
+
+In the logs, confirm that Renovate:
+
+1. Starts the new repository.
+2. Detects `Chart.yaml`.
+3. Extracts Helm dependencies.
+4. Sees available updates or reports that everything is already current.
+
+### Step 8. Switch to normal runs
+
+Once the dry-run looks correct, run it again with:
+
+```text
+dry_run: false
+log_level: debug
+```
+
+Or just wait for the next scheduled run every 6 hours.
+
+### Quick checklist
+
+Before expecting PRs, verify all of the following are true:
+
+1. The repo is listed in `renovate/config.js`.
+2. The target repo has `renovate/renovate.json5` or `renovate/renovate.json`.
+3. The repo config extends `github>nbmustafa/renobot//renovate/renovate.json5`.
+4. `Chart.yaml` has a valid Helm dependency and `# renovate:` annotation.
+5. `Chart.lock` exists and matches the dependency definition.
+6. Both the target repo PR and the `renobot` PR are merged.
+
+---
+
+## 4. Bulk-add the Renovate stub to existing target repos
 
 ```bash
 for repo in fluent-bit grafana prometheus argocd; do
   gh repo clone nbmustafa/$repo /tmp/$repo
-  cp renovate/renovate.json /tmp/$repo/renovate.json
+  mkdir -p /tmp/$repo/renovate
+  cp renovate/repo-template.json5 /tmp/$repo/renovate/renovate.json5
   cd /tmp/$repo
   git checkout -b add-renovate-config
-  git add renovate.json
+  git add renovate/renovate.json5
   git commit -m "chore: add Renovate bot configuration"
   gh pr create --title "chore: add Renovate bot configuration" \
-               --body  "Adds renovate.json so the self-hosted Renovate bot can track upstream Helm chart releases." \
+               --body  "Adds a Renovate config under renovate/ that extends the shared preset from the renobot repository." \
                --base  main
   cd -
 done
 ```
 
+The resulting file in each target repo can stay as small as:
+
+```json5
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>nbmustafa/renobot//renovate/renovate.json5"]
+}
+```
+
 ---
 
-## 4. Update Chart.yaml in each target repo
+## 5. Update Chart.yaml in each target repo
 
 Follow the annotated `Chart.yaml.examples` file. The critical parts are:
 
@@ -106,7 +262,7 @@ files in its PRs.
 
 ---
 
-## 5. Trigger a manual dry-run to validate
+## 6. Trigger a manual dry-run to validate
 
 ```
 GitHub → Actions → 🤖 Renovate Bot → Run workflow
@@ -120,10 +276,10 @@ them.
 
 ---
 
-## 6. Schedule
+## 7. Schedule
 
 The workflow runs on `cron: "0 */6 * * *"` — 00:00, 06:00, 12:00, 18:00 UTC.
-Change the cron expression in `.github/workflows/renovate.yml` to suit your
+Change the cron expression in `.github/workflows/renovate.yaml` to suit your
 team's cadence.
 
 ---
@@ -137,7 +293,7 @@ team's cadence.
 | `values.yaml` | `image.tag` | Renovate regexManager ✅ (if configured) or manual |
 | `Chart.lock` | `dependencies[].version` / `digest` | Renovate post-upgrade task ✅ (automatic) |
 
-See the `regexManagers` comment block in `renovate.json` to enable full
+See the `regexManagers` comment block in the shared `renovate.json5` to enable full
 automatic synchronisation of `appVersion` and `image.tag` in the same PR.
 
 ---
@@ -147,10 +303,10 @@ automatic synchronisation of `appVersion` and `image.tag` in the same PR.
 The workflow pins `renovate-version: "37.440.0"`. To bump it:
 
 1. Check the [Renovate releases page](https://github.com/renovatebot/renovate/releases).
-2. Update the version string in `renovate.yml`.
+2. Update the version string in `renovate.yaml`.
 3. Open a PR, let CI pass, then merge.
 
-You can also let Renovate manage its own version by adding this to `renovate.json`:
+You can also let Renovate manage its own version by adding this to the shared `renovate.json5`:
 
 ```json
 "extends": ["helpers:pinGitHubActionDigests"]

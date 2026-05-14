@@ -38,16 +38,23 @@ module.exports = {
     // "nbmustafa/argocd",
   ],
 
+  /**
+   * Allow repository-level Renovate config to live in a dedicated subfolder
+   * instead of the repo root. Renovate prepends these names to its built-in
+   * defaults, so root-level renovate.json/renovate.json5 still work too.
+   */
+  configFileNames: ["renovate/renovate.json5", "renovate/renovate.json"],
+
   // ── Onboarding ─────────────────────────────────────────────────────────────
   /**
-   * Each repo already carries a renovate.json (provided separately).
+   * Each repo already carries a repository config file (provided separately).
    * Disable the first-run onboarding PR so Renovate starts working
    * immediately without waiting for a merge.
    */
   onboarding: false,
 
   /**
-   * Still require a renovate.json to be present in the repo root.
+   * Still require a repository Renovate config file to be present.
    * This acts as a safety gate: Renovate will not touch a repo unless
    * an explicit config exists, preventing accidental changes.
    */
@@ -57,14 +64,14 @@ module.exports = {
    * Seed the onboarding PR with our production helmv3 config instead of
    * Renovate's generic boilerplate.
    *
-   * "github>nbmustafa/renobot//renovate/renovate.json" is a
-   * Renovate config-preset URL pointing at renovate.json in THIS runner repo.
+   * "github>nbmustafa/renobot//renovate/renovate.json5" is a
+   * Renovate config-preset URL pointing at renovate.json5 in THIS runner repo.
    * When Renovate opens the onboarding PR in e.g. nbmustafa/grafana, it
-   * pre-populates the new renovate.json with a single "extends" line that
+   * pre-populates the new repository config with a single "extends" line that
    * pulls the full helmv3 ruleset from the central config.
    *
    * This means all five target repos share a single source of truth.
-   * To update rules for every repo at once, edit renovate/renovate.json
+   * To update rules for every repo at once, edit renovate/renovate.json5
    * in this runner repo only — no need to open PRs in each target repo.
    *
    * Replace "renovate-config" below with whatever you name THIS repository.
