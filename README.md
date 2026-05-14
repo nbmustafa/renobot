@@ -16,7 +16,7 @@
 
 > **Two-repo model** — `config.js` lives in this *runner* repo. The shared
 > preset also lives here in `renovate/renovate.json5`. Each target repo keeps
-> only a tiny `renovate/renovate.json5` or `renovate/renovate.json` file that
+> only a tiny `.github/renovate.json5` or `.github/renovate.json` file that
 > extends this shared preset.
 
 ---
@@ -99,7 +99,7 @@ open PRs for that repository.
 
 ### Step 2. Add a Renovate stub in the target repo
 
-Create a file named `renovate/renovate.json5` in the target repository.
+Create a file named `.github/renovate.json5` in the target repository.
 That file should be very small and should only extend the shared preset from
 this `renobot` repository.
 
@@ -118,7 +118,7 @@ Directory layout in the target repo:
 target-repo/
 ├── Chart.yaml
 ├── Chart.lock
-└── renovate/
+└── .github/
     └── renovate.json5
 ```
 
@@ -161,7 +161,7 @@ in sync with chart dependency bumps.
 
 Open and merge the PR in the target repository that adds:
 
-1. `renovate/renovate.json5`
+1. `.github/renovate.json5`
 2. `Chart.yaml` updates
 3. `Chart.lock` updates
 
@@ -211,7 +211,7 @@ Or just wait for the next scheduled run every 6 hours.
 Before expecting PRs, verify all of the following are true:
 
 1. The repo is listed in `renovate/config.js`.
-2. The target repo has `renovate/renovate.json5` or `renovate/renovate.json`.
+2. The target repo has `.github/renovate.json5` or `.github/renovate.json`.
 3. The repo config extends `github>nbmustafa/renobot//renovate/renovate.json5`.
 4. `Chart.yaml` has a valid Helm dependency and `# renovate:` annotation.
 5. `Chart.lock` exists and matches the dependency definition.
@@ -224,14 +224,14 @@ Before expecting PRs, verify all of the following are true:
 ```bash
 for repo in fluent-bit grafana prometheus argocd; do
   gh repo clone nbmustafa/$repo /tmp/$repo
-  mkdir -p /tmp/$repo/renovate
-  cp renovate/repo-template.json5 /tmp/$repo/renovate/renovate.json5
+  mkdir -p /tmp/$repo/.github
+  cp renovate/repo-template.json5 /tmp/$repo/.github/renovate.json5
   cd /tmp/$repo
   git checkout -b add-renovate-config
-  git add renovate/renovate.json5
+  git add .github/renovate.json5
   git commit -m "chore: add Renovate bot configuration"
   gh pr create --title "chore: add Renovate bot configuration" \
-               --body  "Adds a Renovate config under renovate/ that extends the shared preset from the renobot repository." \
+               --body  "Adds a Renovate config under .github/ that extends the shared preset from the renobot repository." \
                --base  main
   cd -
 done

@@ -38,13 +38,6 @@ module.exports = {
     // "nbmustafa/argocd",
   ],
 
-  /**
-   * Allow repository-level Renovate config to live in a dedicated subfolder
-   * instead of the repo root. Renovate prepends these names to its built-in
-   * defaults, so root-level renovate.json/renovate.json5 still work too.
-   */
-  configFileNames: ["renovate/renovate.json5", "renovate/renovate.json"],
-
   // ── Onboarding ─────────────────────────────────────────────────────────────
   /**
    * Each repo already carries a repository config file (provided separately).

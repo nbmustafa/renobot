@@ -3,8 +3,8 @@
 
   // Minimal per-repo stub.
   // Commit this file to each Helm template repo as:
-  // renovate/renovate.json5
-  // or convert it to renovate/renovate.json if you prefer JSON only.
+  // .github/renovate.json5
+  // or convert it to .github/renovate.json if you prefer JSON only.
   //
   // That target repo will then inherit the shared Renovate rules maintained
   // centrally in the renobot repository.
