@@ -185,6 +185,13 @@ Then commit `Chart.yaml` and `Chart.lock` together in the target repository.
 This gives Renovate a clean starting point and ensures lockfile updates stay
 in sync with chart dependency bumps.
 
+Why this matters:
+
+1. Renovate can only update `Chart.lock` if the file already exists in the repository.
+2. The shared `renobot` preset runs `helm dependency update` after `helmv3` dependency bumps.
+3. That command refreshes `Chart.lock` so the PR includes both `Chart.yaml` and `Chart.lock`.
+4. If `Chart.lock` is missing on the default branch, the PR will usually only change `Chart.yaml`.
+
 ### Step 5. Merge the target repo config first
 
 Open and merge the PR in the target repository that adds:
@@ -244,6 +251,7 @@ Before expecting PRs, verify all of the following are true:
 4. `Chart.yaml` has a valid Helm dependency and `# renovate:` annotation.
 5. `Chart.lock` exists and matches the dependency definition.
 6. Both the target repo PR and the `renobot` PR are merged.
+7. The update is being handled by `helmv3`, not only by `regex`.
 
 ---
 
@@ -287,6 +295,13 @@ Follow the annotated `Chart.yaml.examples` file. The critical parts are:
 
 Commit `Chart.yaml` **and** `Chart.lock` together. Renovate will update both
 files in its PRs.
+
+If a PR changes only `Chart.yaml`, check these first:
+
+1. `Chart.lock` is already committed on the default branch.
+2. The chart uses `dependencies:` in `Chart.yaml`.
+3. The Renovate logs show `helmv3`, not only `regex`.
+4. The shared `renobot` changes enabling `helm dependency update` are merged.
 
 ---
 

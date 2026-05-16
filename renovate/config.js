@@ -79,6 +79,15 @@ module.exports = {
   onboardingCommitMessage: "chore: add Renovate config for Helm chart auto-updates",
 
   /**
+   * Allow vetted post-upgrade commands from repository config.
+   *
+   * We use this for Helm wrapper charts so Renovate can run
+   * `helm dependency update` after changing Chart.yaml and commit the
+   * refreshed Chart.lock in the same PR.
+   */
+  allowedCommands: ["^helm dependency update$"],
+
+  /**
    * Never create more than 10 open PRs per repository at one time.
    * Keeps the PR queue manageable and avoids GitHub rate-limit spikes.
    */

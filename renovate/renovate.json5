@@ -119,8 +119,28 @@
       "description": "Delay major-version PRs for 7 days to avoid immediately superseded releases",
       "matchUpdateTypes": ["major"],
       "stabilityDays": 7
+    },
+    {
+      "description": "When helmv3 updates Chart.yaml, regenerate Chart.lock with helm dependency update",
+      "matchManagers": ["helmv3"],
+      "postUpgradeTasks": {
+        "commands": ["helm dependency update"],
+        "fileFilters": ["Chart.yaml", "Chart.lock"],
+        "executionMode": "update"
+      }
     }
   ],
+
+  // ─── Lock File Maintenance ───────────────────────────────────────────────
+  /**
+   * Keep Chart.lock fresh on a schedule even when no direct version bump PR
+   * is open. This is a secondary safety net; the main path is the
+   * postUpgradeTasks rule above, which refreshes Chart.lock in the same PR as
+   * the dependency bump.
+   */
+  "lockFileMaintenance": {
+    "enabled": true
+  },
 
   // ─── Security Updates ────────────────────────────────────────────────────
   /**
