@@ -75,7 +75,35 @@ hard-coded.
 
 ---
 
-## 3. Onboard a new Helm repository
+## 3. Security alerts for onboarded repos
+
+The shared preset in [renovate/renovate.json5](/Users/nash/Desktop/Dev-k8s/renobot/renovate/renovate.json5:1) already enables Renovate's
+`vulnerabilityAlerts` support.
+
+For vulnerability PRs to work in an onboarded GitHub repository:
+
+1. Go to the target repository's `Settings`.
+2. Open `Security` or `Advanced Security`.
+3. Enable `Dependency graph`.
+4. Enable `Dependabot alerts`.
+5. Confirm the repository actually shows Dependabot alerts in GitHub's `Security` tab.
+6. Run the Renovate workflow again.
+
+Important limitation for this setup:
+
+1. Renovate vulnerability PRs on GitHub are driven by GitHub Dependabot alerts.
+2. GitHub Dependabot alerts only work for ecosystems supported by GitHub's dependency graph.
+3. Pure Helm chart dependencies are usually not covered there.
+4. So Helm-only wrapper/template repos may get normal Renovate update PRs, but not vulnerability PRs.
+
+What this means in practice:
+
+1. If an onboarded repo also contains supported ecosystems like GitHub Actions, npm, pip, Maven, NuGet, or similar, Renovate can raise vulnerability PRs for those when GitHub creates alerts.
+2. If the repo only wraps an upstream Helm chart, Renovate will still do normal version updates, but vulnerability alert PRs may never appear because GitHub does not provide the underlying alert signal for that dependency.
+
+---
+
+## 4. Onboard a new Helm repository
 
 Use these steps any time you want Renovate to manage a new Helm wrapper or
 template repository.
@@ -219,7 +247,7 @@ Before expecting PRs, verify all of the following are true:
 
 ---
 
-## 4. Bulk-add the Renovate stub to existing target repos
+## 5. Bulk-add the Renovate stub to existing target repos
 
 ```bash
 for repo in fluent-bit grafana prometheus argocd; do
@@ -248,7 +276,7 @@ The resulting file in each target repo can stay as small as:
 
 ---
 
-## 5. Update Chart.yaml in each target repo
+## 6. Update Chart.yaml in each target repo
 
 Follow the annotated `Chart.yaml.examples` file. The critical parts are:
 
@@ -262,7 +290,7 @@ files in its PRs.
 
 ---
 
-## 6. Trigger a manual dry-run to validate
+## 7. Trigger a manual dry-run to validate
 
 ```
 GitHub → Actions → 🤖 Renovate Bot → Run workflow
@@ -276,7 +304,7 @@ them.
 
 ---
 
-## 7. Schedule
+## 8. Schedule
 
 The workflow runs on `cron: "0 */6 * * *"` — 00:00, 06:00, 12:00, 18:00 UTC.
 Change the cron expression in `.github/workflows/renovate.yaml` to suit your

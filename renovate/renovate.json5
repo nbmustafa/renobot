@@ -126,6 +126,17 @@
   /**
    * Allow Renovate to raise dedicated vulnerability remediation PRs with
    * clear security labeling when supported by the datasource/platform.
+   *
+   * For GitHub self-hosted runs, Renovate reads GitHub Dependabot alerts.
+   * That means each onboarded repository must have:
+   * - Dependency graph enabled
+   * - Dependabot alerts enabled
+   *
+   * Important limitation:
+   * GitHub vulnerability alerts depend on ecosystems supported by GitHub's
+   * dependency graph. Pure Helm chart dependencies are typically not covered
+   * here, so Helm-only wrapper repos may not receive vulnerability PRs from
+   * this feature even though normal Renovate update PRs continue to work.
    */
   "vulnerabilityAlerts": {
     "enabled": true,
