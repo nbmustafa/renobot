@@ -78,6 +78,7 @@ jobs:
           #RENOVATE_BASE_DIR: /github/workspace/renovate-base
           #RENOVATE_CACHE_DIR: /github/workspace/renovate-cache
           RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+          RENOVATE_ALLOWED_COMMANDS: ^helm dependency update$
           RENOVATE_DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
           LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
         with:
