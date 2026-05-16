@@ -10,10 +10,10 @@
 #   2. `appVersion`              → (optional) can be kept in sync via a custom
 #                                   regex manager (see notes at the bottom).
 #
-# The `# renovate: datasource=...` INLINE COMMENT is the KEY mechanism.
-# It overrides auto-detection so Renovate knows EXACTLY which registry and
-# package name to query, even when the local chart name differs from the
-# upstream package name.
+# The `# renovate: datasource=...` INLINE COMMENT is used for regex-managed
+# fields such as `appVersion`. Helm dependency versions should still be
+# declared normally under `dependencies:` so the helmv3 manager can update
+# both `Chart.yaml` and `Chart.lock`.
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -29,19 +29,14 @@ type: application
 version: 0.1.0
 
 # `appVersion` = version of the Fluent Bit APPLICATION being deployed.
-# When you update the dependency below, also update this to match the
-# upstream chart's appVersion (see values-sync section in README).
+# Renovate can keep this in sync via the annotation immediately above it.
+# The dependency version below is still managed separately by helmv3.
+# renovate: datasource=helm registryUrl=https://fluent.github.io/helm-charts depName=fluent-bit
 appVersion: "3.3.2"
 
 dependencies:
-  # The inline comment tells Renovate:
-  #   datasource  → use Helm registry lookups
-  #   registryUrl → query this specific feed
-  #   depName     → the exact package name on that feed
-  # Without this comment, Renovate still works but may mis-detect the registry.
-  # renovate: datasource=helm registryUrl=https://fluent.github.io/helm-charts depName=fluent-bit
   - name: fluent-bit
-    version: "3.3.2"        # ← Renovate will open a PR to bump this value
+    version: "3.3.2"        # ← helmv3 updates this and refreshes Chart.lock
     repository: "https://fluent.github.io/helm-charts"
 
 
@@ -53,10 +48,10 @@ name: grafana
 description: A Helm chart wrapping the upstream Grafana release
 type: application
 version: 0.1.0
+# renovate: datasource=helm registryUrl=https://grafana.github.io/helm-charts depName=grafana
 appVersion: "11.4.0"
 
 dependencies:
-  # renovate: datasource=helm registryUrl=https://grafana.github.io/helm-charts depName=grafana
   - name: grafana
     version: "8.8.4"
     repository: "https://grafana.github.io/helm-charts"
@@ -74,10 +69,10 @@ name: prometheus
 description: A Helm chart wrapping kube-prometheus-stack
 type: application
 version: 0.1.0
+# renovate: datasource=helm registryUrl=https://prometheus-community.github.io/helm-charts depName=kube-prometheus-stack
 appVersion: "v0.79.2"   # Prometheus Operator version
 
 dependencies:
-  # renovate: datasource=helm registryUrl=https://prometheus-community.github.io/helm-charts depName=kube-prometheus-stack
   - name: kube-prometheus-stack
     version: "67.9.0"
     repository: "https://prometheus-community.github.io/helm-charts"
@@ -91,10 +86,10 @@ name: argocd
 description: A Helm chart wrapping the upstream Argo CD release
 type: application
 version: 0.1.0
+# renovate: datasource=helm registryUrl=https://argoproj.github.io/argo-helm depName=argo-cd
 appVersion: "v2.13.3"
 
 dependencies:
-  # renovate: datasource=helm registryUrl=https://argoproj.github.io/argo-helm depName=argo-cd
   - name: argo-cd
     version: "7.7.16"
     repository: "https://argoproj.github.io/argo-helm"
@@ -107,20 +102,21 @@ dependencies:
 # name `external-dns`. The official registry is hosted at:
 #   https://kubernetes-sigs.github.io/external-dns/
 #
-# appVersion tracks the ExternalDNS application release (e.g. v0.15.x),
-# which is independent from the chart version (e.g. 1.x.x).
+# appVersion tracks the ExternalDNS application release (e.g. v0.15.x).
+# The annotation immediately above lets regex update appVersion, while helmv3
+# updates the dependency version and corresponding Chart.lock entries.
 
 apiVersion: v2
 name: external-dns
 description: A Helm chart wrapping the upstream ExternalDNS release
 type: application
 version: 0.1.0
+# renovate: datasource=helm registryUrl=https://kubernetes-sigs.github.io/external-dns/ depName=external-dns
 appVersion: "v0.15.1"
 
 dependencies:
-  # renovate: datasource=helm registryUrl=https://kubernetes-sigs.github.io/external-dns/ depName=external-dns
   - name: external-dns
-    version: "1.15.1"        # ← Renovate will open a PR to bump this value
+    version: "1.15.1"        # ← helmv3 updates this and refreshes Chart.lock
     repository: "https://kubernetes-sigs.github.io/external-dns/"
 
 
@@ -128,7 +124,8 @@ dependencies:
 # SYNCHRONISING appVersion in values.yaml
 # ══════════════════════════════════════════════════════════════════════════════
 #
-# Renovate's helmv3 manager ONLY updates `dependencies[].version`.
+# Renovate's helmv3 manager updates `dependencies[].version`.
+# When it owns that field, Renovate can also refresh `Chart.lock`.
 # `appVersion` in Chart.yaml and image tags in values.yaml are NOT touched
 # automatically unless you add a custom regex manager.
 #

@@ -41,23 +41,25 @@
   /**
    * This regex manager is intentionally annotation-driven.
    *
+   * Important:
+   * - helmv3 should own `dependencies[].version` updates
+   * - regex should only own `appVersion` (and any future custom fields)
+   *
+   * That split matters because helmv3 can also refresh Chart.lock, while a
+   * regex-only text replacement cannot.
+   *
    * Example:
    *   # renovate: datasource=helm registryUrl=https://kubernetes-sigs.github.io/external-dns/ depName=external-dns
    *   appVersion: "1.15.1"
-   *
-   * or:
-   *   # renovate: datasource=helm registryUrl=https://kubernetes-sigs.github.io/external-dns/ depName=external-dns
-   *   version: "1.15.1"
-   *
-   * Renovate then treats the following version/appVersion value as belonging
-   * to the annotated upstream dependency.
+   * Renovate then treats the following appVersion value as belonging to the
+   * annotated upstream dependency.
    */
   "regexManagers": [
     {
-      "description": "Track upstream Helm chart version or appVersion via renovate annotation comments",
+      "description": "Track upstream Helm appVersion via renovate annotation comments",
       "fileMatch": ["(^|/)Chart\\.yaml$"],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>[^\\s]+) registryUrl=(?<registryUrl>[^\\s]+) depName=(?<depName>[^\\s]+)\\s+(?:version|appVersion):\\s*[\"']?(?<currentValue>[^\\s\"']+)[\"']?"
+        "# renovate: datasource=(?<datasource>[^\\s]+) registryUrl=(?<registryUrl>[^\\s]+) depName=(?<depName>[^\\s]+)\\s+appVersion:\\s*[\"']?(?<currentValue>[^\\s\"']+)[\"']?"
       ],
       "versioningTemplate": "semver"
     }
